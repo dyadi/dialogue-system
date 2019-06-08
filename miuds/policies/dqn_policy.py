@@ -1,4 +1,4 @@
-from .policy import Policy
+from .policy import RLPolicy
 from .networks import MLP
 from .replay_buffer import ReplayBuffer
 from .schedule import LinearSchedule
@@ -9,28 +9,25 @@ import torch
 import torch.nn.functional as F
 
 
-class DQNPolicy(Policy):
-    '''
-    DQN Policy
-    '''
+class DQNPolicy(RLPolicy):
+    """Deep-Q-Network Policy
+    """
     def __init__(self, input_size, output_size, hidden_size=128):
+        super(self, RLPolicy).__init__()
         self.network = MLP(
                 input_size=input_size,
                 output_size=output_size,
                 hidden_size=hidden_size)
-        self._train_mode = False
         self.device = miuds.config.device
 
     def set_train_mode(self, batch_size=32, gamma=0.9, replay_buffer_size=2000,
                        network_update_freq=1, target_update_freq=10,
-                       optimizer='Adam', lr=1e-2,
+                       optimizer='Adam', optimizer_args={'lr': 1e-2},
                        eps_greedy=('Linear', (2000, 0.0, 1.0))):
-        '''
-        Set policy to train mode
-        Arguments:
+        """Set policy to train mode
 
-        '''
-        self._train_mode = True
+        """
+        super(self, RLPolicy).set_train_mode()
         self.replay_buffer = ReplayBuffer(
                 capacity=replay_buffer_size,
                 keys=('state', 'action', 'next_state', 'reward', 'done'))
@@ -45,9 +42,10 @@ class DQNPolicy(Policy):
 
         if isinstance(optimizer, str):
             self.optimizer = getattr(torch.optim, optimizer)(
-                    self.network.parameters(), lr=lr)
+                    self.network.parameters(), **optimizer_args)
         else:
-            self.optimizer = optimizer(self.network.parameters(), lr=lr)
+            self.optimizer = optimizer(self.network.parameters(),
+                                       **optimizer_args)
 
         self.target_network = MLP(
                 input_size=self.input_size,
@@ -57,9 +55,10 @@ class DQNPolicy(Policy):
         self.num_step = 0
 
     def train_episode(self, env):
-        '''
-        Train episode
-        '''
+        """Train episode
+        ### WARNING ###
+        ### THIS METHOD IS ONLY FOR TESTING ###
+        """
         if not self._train_mode:
             self.set_train_mode()
         episode_reward = 0
