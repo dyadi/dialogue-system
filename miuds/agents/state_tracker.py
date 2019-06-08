@@ -93,19 +93,36 @@ class NeuralStateTracker(StateTracker):
                 v: k for k, v in self.slot_dict.items()}
         self.reverse_transitive_intent_dict = {
                 v: k for k, v in self.transitive_intent_dict.items()}
+        self.onehot_action_set = []
+        for intent in self.intent_set:
+            if intent in self.transitive_intent_set:
+                for slot in self.slot_set:
+                    self.onehot_action_set.append({intent: slot})
+            else:
+                self.onehot_action_set.append(intent)
 
     @property
     def state_size(self):
-        # TODO
-        return 0
+        '''
+        turn = 1
+        slots = transitive_intent * slot
+        action = intent + slots
+        total = turn + user_slot + agent_slot + user_action + agent_action
+              = 1 + 2 * slots + 2 * action
+              = 1 + 2 * slots + 2 * (intent * slots)
+              = 1 + 4 * slots + 2 * intent
+        '''
+        return (1
+                + 4 * len(self.transitive_intent_set) * len(self.slot_set)
+                + 2 * len(self.intent_set))
 
     @property
     def action_size(self):
         '''
         Only support for onehot action now(single intent, single slot).
+        total = transitive_intent * slots + intent
         '''
-        # TODO
-        return 0
+        return len(self.onehot_action_set)
 
     def _encode_slots(self, current_slots):
         x = np.zeros(
@@ -130,7 +147,7 @@ class NeuralStateTracker(StateTracker):
         return x
 
     def _encoder_fillers(self, dialog_action):
-        pass
+        raise NotImplementedError()
 
     def encode_dialog_state(self, dialog_state):
         turn = np.array(
@@ -150,7 +167,7 @@ class NeuralStateTracker(StateTracker):
         return x
 
     def decode_dialog_state(self, x):
-        pass
+        raise NotImplementedError()
 
     def encode_dialog_action(self, dialog_action, onehot=True):
         if onehot:
@@ -161,14 +178,13 @@ class NeuralStateTracker(StateTracker):
             return np.hstack((intents, slots))
 
     def decode_dialog_action(self, y, onehot=True):
-        if one_hot:
+        if onehot:
             return self._decode_onehot_action(y)
         else:
-            pass
-
+            raise NotImplementedError()
 
     def _encode_onehot_action(self, dialog_action):
-        pass
-    
+        raise NotImplementedError()
+
     def _decode_onehot_action(self, y):
-        pass
+        return self.onehot_action_set[y]
