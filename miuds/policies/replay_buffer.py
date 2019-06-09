@@ -11,7 +11,7 @@ class ReplayBuffer(object):
 
     def push(self, transition):
         self.memory.append(transition)
- 
+
     def sample(self, batch_size):
         raw_batch = random.sample(self.memory, batch_size)
         batch = [np.vstack(b) for b in zip(*raw_batch)]

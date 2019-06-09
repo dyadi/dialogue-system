@@ -1,6 +1,6 @@
 class DialogueManager(object):
-    def __init__(self, agent, user, action_set, transitive_action_set, 
-                 slot_set):
+    def __init__(self, agent, user, action_set, transitive_action_set,
+                 slot_set, nlu, nlg):
         self.agent = agent
         self.user = user
         self.action_set = action_set
@@ -8,14 +8,14 @@ class DialogueManager(object):
         self.slot_set = slot_set
         self.nlu = nlu
         self.nlg = nlg
-        self.mode = 'text' # text or semantic
+        self.mode = 'text'  # text or semantic
 
     def text_mode(self):
         self.mode = 'text'
 
     def semantic_mode(self):
         self.mode = 'semantic'
-    
+
     def __call__(self, user_input):
         if self.mode == 'text':
             user_action = self.nlu(user_input)
@@ -31,5 +31,4 @@ class DialogueManager(object):
         else:
             output = agent_action
 
-        return output 
-
+        return output

@@ -6,7 +6,8 @@ UNK = '<UNK>'
 
 
 class StateTracker(object):
-    def __init__(self, intent_set, transitive_intent_set, slot_set, max_turn):
+    def __init__(self, intent_set, transitive_intent_set, slot_set,
+                 max_turn=10):
         self.intent_set = intent_set
         self.transitive_intent_set = transitive_intent_set
         self.slot_set = slot_set
@@ -22,10 +23,10 @@ class StateTracker(object):
                 intent: {} for intent in self.transitive_intent_set}
         self.last_action = {'user': {}, 'agent': {}}
 
-    def _update_last_action(self, action):
-        self.last_action[action['message_from']] = {}
-        from_action = self.last_action[action['message_from']]
-        for dialog_act in action['dialog_act']:
+    def _update_last_action(self, action, message_from):
+        self.last_action[message_from] = {}
+        from_action = self.last_action[message_from]
+        for dialog_act in action:
             intent = dialog_act['intent']
             if intent not in from_action:
                 from_action[intent] = {}
@@ -36,19 +37,19 @@ class StateTracker(object):
                 else:
                     from_action[intent][slot] = UNK
 
-    def update(self, action):
-        if action['message_from'] == 'user':
+    def update(self, action, message_from):
+        if message_from == 'user':
             from_slots = self.current_slots['user']
             to_slots = self.current_slots['agent']
-        elif action['message_from'] == 'agent':
+        elif message_from == 'agent':
             from_slots = self.current_slots['agent']
             to_slots = self.current_slots['user']
         else:
-            raise KeyError(action['message_from'])
+            raise KeyError(message_from)
 
-        self._update_last_action(action)
+        self._update_last_action(action, message_from)
 
-        for dialog_act in action['dialog_act']:
+        for dialog_act in action:
             if 'slot' in dialog_act:
                 if 'filler' in dialog_act:
                     slot_val = dialog_act['filler']
@@ -97,9 +98,11 @@ class NeuralStateTracker(StateTracker):
         for intent in self.intent_set:
             if intent in self.transitive_intent_set:
                 for slot in self.slot_set:
-                    self.onehot_action_set.append({intent: slot})
+                    self.onehot_action_set.append({
+                        'intent': intent,
+                        'slot': slot})
             else:
-                self.onehot_action_set.append(intent)
+                self.onehot_action_set.append({'intent': intent})
 
     @property
     def state_size(self):
@@ -141,7 +144,7 @@ class NeuralStateTracker(StateTracker):
         return x.reshape(-1)
 
     def _encode_intents(self, dialog_action):
-        x = np.zeros((len(self.intent_dict)))
+        x = np.zeros((len(self.intent_dict))).astype(np.float32)
         for intent in dialog_action.keys():
             x[self.intent_dict[intent]] = 1.
         return x
@@ -179,7 +182,7 @@ class NeuralStateTracker(StateTracker):
 
     def decode_dialog_action(self, y, onehot=True):
         if onehot:
-            return self._decode_onehot_action(y)
+            return [self._decode_onehot_action(y)]
         else:
             raise NotImplementedError()
 

@@ -13,7 +13,7 @@ class DQNPolicy(RLPolicy):
     """Deep-Q-Network Policy
     """
     def __init__(self, input_size, output_size, hidden_size=128):
-        super(self, RLPolicy).__init__()
+        super(DQNPolicy, self).__init__()
         self.network = MLP(
                 input_size=input_size,
                 output_size=output_size,
@@ -27,7 +27,7 @@ class DQNPolicy(RLPolicy):
         """Set policy to train mode
 
         """
-        super(self, RLPolicy).set_train_mode()
+        super(DQNPolicy, self).set_train_mode()
         self.replay_buffer = ReplayBuffer(
                 capacity=replay_buffer_size,
                 keys=('state', 'action', 'next_state', 'reward', 'done'))

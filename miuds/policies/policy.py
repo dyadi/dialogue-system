@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
+
 class Policy(metaclass=ABCMeta):
     '''
     Policy interface
@@ -8,7 +9,8 @@ class Policy(metaclass=ABCMeta):
     def make_action(self, state):
         pass
 
-class RLPolicy(Policy, metacalss=ABCMeta):
+
+class RLPolicy(Policy, metaclass=ABCMeta):
     '''
     Reinforcement Learning Policy
     '''
@@ -19,6 +21,5 @@ class RLPolicy(Policy, metacalss=ABCMeta):
         self._train_mode = True
 
     @abstractmethod
-    def train_epsisode(self):
+    def train_episode(self, *args, **kwargs):
         pass
-
