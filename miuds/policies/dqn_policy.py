@@ -7,16 +7,25 @@ from miuds.torch_utils import to_tensor
 import numpy as np
 import torch
 import torch.nn.functional as F
+from collections import namedtuple
+
+
+Transition = namedtuple(
+    'Transition',
+    ('state', 'action', 'next_state', 'reward', 'done'),
+    defaults=(None, ) * 5)
 
 
 class DQNPolicy(RLPolicy):
     """Deep-Q-Network Policy
     """
-    def __init__(self, input_size, output_size, hidden_size=128):
-        super(DQNPolicy, self).__init__()
+    def __init__(self, intent_set, transitive_intent_set, slot_set,
+                 hidden_size=128):
+        super(DQNPolicy, self).__init__(
+                intent_set, transitive_intent_set, slot_set)
         self.network = MLP(
-                input_size=input_size,
-                output_size=output_size,
+                input_size=self.input_size,
+                output_size=self.output_size,
                 hidden_size=hidden_size)
         self.device = miuds.config.device
 
@@ -24,13 +33,12 @@ class DQNPolicy(RLPolicy):
                        network_update_freq=1, target_update_freq=10,
                        optimizer='Adam', optimizer_args={'lr': 1e-2},
                        eps_greedy=('Linear', (2000, 0.0, 1.0))):
-        """Set policy to train mode
-
+        """Set policy to train mode and set hyperparamters
         """
         super(DQNPolicy, self).set_train_mode()
         self.replay_buffer = ReplayBuffer(
                 capacity=replay_buffer_size,
-                keys=('state', 'action', 'next_state', 'reward', 'done'))
+                transition=Transition)
         self.batch_size = batch_size
         self.gamma = gamma
         self.network_update_freq = network_update_freq
@@ -53,32 +61,37 @@ class DQNPolicy(RLPolicy):
                 hidden_size=self.hidden_size)
         self.target_network.load_state_dict(self.network.state_dict())
         self.num_step = 0
+        self.last_transition = Transition()
 
-    def train_episode(self, env):
+    @staticmethod
+    def train_episode(dialog_manager, user):
         """Train episode
         ### WARNING ###
         ### THIS METHOD IS ONLY FOR TESTING ###
         """
-        if not self._train_mode:
+        # TODO: make this work for high-level api
+        policy = dialog_manager.agent.policy
+        if not policy.train_mode:
             self.set_train_mode()
         episode_reward = 0
-        state = env.reset()
+        user_action = user.initial_episode()
         done = False
         while not done:
-            action = self.make_action(state)
-            next_state, reward, done, info = env.step(action)
-            self.replay_buffer.push((state, action, next_state, reward, done))
-            state = next_state
+            action = dialog_manager(user_action)
+            user_action, reward, done, info = user.step(action)
+            self.last_transition.reward = reward
+            self.last_transition.done = done
             episode_reward += reward
-            self.num_step += 1
-            if self.num_step % self.network_update_freq == 0:
+            policy.num_step += 1
+            if policy.num_step % policy.network_update_freq == 0:
                 self._update()
-            if self.num_step % self.target_update_freq == 0:
-                self.target_network.load_state_dict(self.network.state_dict())
+            if policy.num_step % policy.target_update_freq == 0:
+                policy.target_network.load_state_dict(
+                        self.network.state_dict())
         return episode_reward
 
     def _update(self):
-        assert (self._train_mode)
+        assert (self.train_mode)
         if len(self.replay_buffer) < self.batch_size:
             return
         batch = self.replay_buffer.sample(self.batch_size)
@@ -102,13 +115,26 @@ class DQNPolicy(RLPolicy):
         self.optimizer.step()
 
     def make_action(self, state):
-        if self._train_mode and self.eps_greedy is not None and \
+        state = self.encode_dialog_state(state)
+
+        if self.train_mode and self.eps_greedy is not None and \
            torch.rand(1).item() < self.eps_greedy(self.num_step):
             action = np.random.randint(self.output_size)
         else:
             state = to_tensor(state).unsqueeze(0)
             q_values = self.network(state)
             action = q_values.argmax().item()
+
+        # Store transition
+        # TODO: This not work now
+        if self.train_mode:
+            self.last_transition.next_state = state
+            if self.last_transition.state is not None:
+                self.replay_buffer.push(self.last_transition)
+            self.last_transition.state = state
+            self.last_transition.action = action
+
+        action = self.decode_dialog_action(action)
         return action
 
     def save(self, path):
@@ -129,11 +155,3 @@ class DQNPolicy(RLPolicy):
     @property
     def hidden_size(self):
         return self.network.hidden_size
-
-    @property
-    def input_size(self):
-        return self.network.input_size
-
-    @property
-    def output_size(self):
-        return self.network.output_size

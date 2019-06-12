@@ -20,7 +20,6 @@ class MLP(nn.Module):
         self.output_layer = nn.Linear(hidden_size, output_size)
         if self.num_hidden_layers > 0:
             raise NotImplementedError('Not support num_hidden_layers > 0 now.')
-            #raise Exception('Not implement now!')
 
     def forward(self, x):
         x = self.input_layer(x)

@@ -1,47 +1,36 @@
 import miuds.policies
-from .state_tracker import NeuralStateTracker
+from .state_tracker import StateTracker
 
 
 class Agent(object):
+    '''Dialog agent
+    The agent interact with user. Take the semantic user_action as input and
+    output the agent_action.
+    '''
     def __init__(self, intent_set, transitive_intent_set, slot_set,
                  ontology, policy='DQNPolicy', policy_args={}):
-        self.intent_set = intent_set
-        self.transitive_intent_set = transitive_intent_set
-        self.slot_set = slot_set
-        self.ontology = ontology
-        self.state_tracker = NeuralStateTracker(
+        self.state_tracker = StateTracker(
                 intent_set=intent_set,
                 transitive_intent_set=transitive_intent_set,
-                slot_set=slot_set)
-        policy_args['input_size'] = self.state_tracker.state_size
-        policy_args['output_size'] = self.state_tracker.action_size
+                slot_set=slot_set,
+                ontology=ontology)
+        policy_args['intent_set'] = intent_set
+        policy_args['transitive_intent_set'] = transitive_intent_set
+        policy_args['slot_set'] = slot_set
         if isinstance(policy, str):
             self.policy = getattr(miuds.policies, policy)(**policy_args)
         elif issubclass(policy, miuds.policies.Policy):
             self.policy = policy(**policy_args)
-        elif isinstance(policy, miuds.policies.Policy):
-            self.policy = policy
         else:
             raise TypeError(
                     'policy must be a subclass of miuds.policies.Policy.')
 
-    def __call__(self, dialog_action):
+    def set_policy(self, policy):
+        self.policy = policy
 
-        self.state_tracker.update(dialog_action, message_from='user')
-        dialog_state = self.state_tracker.get_dialog_state()
-
-        # NOTE: This not work now
-        dialog_state = self.ontology.retrieve(dialog_state)
-
-        # Encode dialog state for neural network
-        # TODO: feasible for rule-based policy
-        state = self.state_tracker.encode_dialog_state(dialog_state)
-
-        action = self.policy.make_action(state)
-
-        # Decode neural network output
-        # TODO: feasible for rule-based policy
-        agent_action = self.state_tracker.decode_dialog_action(action)
-
+    def __call__(self, user_action):
+        self.state_tracker.update(user_action, message_from='user')
+        state = self.state_tracker.get_dialog_state()
+        agent_action = self.policy.make_action(state)
         self.state_tracker.update(agent_action, message_from='agent')
         return agent_action
