@@ -8,7 +8,7 @@ class Agent(object):
     output the agent_action.
     '''
     def __init__(self, intent_set, transitive_intent_set, slot_set,
-                 ontology, policy='DQNPolicy', policy_args={}):
+                 ontology, policy='RulePolicy', policy_args={}):
         self.state_tracker = StateTracker(
                 intent_set=intent_set,
                 transitive_intent_set=transitive_intent_set,

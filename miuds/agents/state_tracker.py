@@ -18,10 +18,8 @@ class StateTracker(object):
     def initial_epsidoe(self):
         self.turn = 0
         self.current_slots = {}
-        self.current_slots['user'] = {
-                intent: {} for intent in self.transitive_intent_set}
-        self.current_slots['agent'] = {
-                intent: {} for intent in self.transitive_intent_set}
+        self.current_slots['user'] = {'inform': {}, 'request': {}}
+        self.current_slots['agent'] = {'inform': {}, 'request': {}}
         self.last_action = {'user': {}, 'agent': {}}
         self.avail_filler = {}
 
@@ -52,33 +50,46 @@ class StateTracker(object):
         self._update_last_action(action, message_from)
 
         for dialog_act in action:
+            intent = dialog_act['intent']
             if 'slot' in dialog_act:
                 if 'filler' in dialog_act:
                     slot_val = dialog_act['filler']
                 else:
                     slot_val = UNK
-                from_slots[dialog_act['intent']][dialog_act['slot']] = slot_val
+                if intent not in from_slots:
+                    from_slots[intent] = {}
+                from_slots[intent][dialog_act['slot']] = slot_val
                 # TODO remove requested to_slots
-                # to_slots[dialog_act['intent']][dialog_act['slot']] = slot_val
 
-        # NOTE: Ontology not work now
-        self.avail_filler = self.ontology.retrieve(self.current_slots)
+        self.avail_filler = self.retrieve_avail_filler()
 
         self.turn += 1
+
+    def retrieve_avail_filler(self):
+        constraint = {}
+        # User slots have higher priority
+        for message_from in ['agent', 'user']:
+            for intent, slots in self.current_slots[message_from].items():
+                for slot, slot_val in slots.items():
+                    if slot_val is not UNK:
+                        constraint[slot] = slot_val
+        return self.ontology.retrieve(constraint)
 
     def get_dialog_state(self):
         dialog_state = {}
         dialog_state['turn'] = self.turn
         dialog_state['current_slots'] = copy.deepcopy(self.current_slots)
         dialog_state['last_action'] = copy.deepcopy(self.last_action)
+        dialog_state['avail_filler'] = copy.deepcopy(self.avail_filler)
         return dialog_state
 
     def __repr__(self):
         repr_str = super().__repr__()
         repr_str += '\n'
         repr_str += 'turn: {}\n'.format(self.turn)
-        repr_str += 'slots: {}\n'.format(
-                json.dumps(self.current_slots, indent=2))
-        repr_str += 'last_action: {}\n'.format(
-                json.dumps(self.last_action, indent=2))
+        repr_str += 'avail_filler: {}\n'.format(len(self.avail_filler))
+        repr_str += 'slots:\n'
+        repr_str += json.dumps(self.current_slots, indent=2)
+        repr_str += '\nlast_action:\n'
+        repr_str += json.dumps(self.last_action, indent=2)
         return repr_str
