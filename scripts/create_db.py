@@ -31,7 +31,7 @@ insert_movie = 'INSERT INTO MOVIE (moviename, actor) VALUES(?, ?)'
 insert_theater = 'INSERT INTO Theater (theater, city) VALUES(?, ?)'
 insert_time_table = 'INSERT INTO TimeTable (movie_id, theater_id, date, starttime) VALUES(?, ?, ?, ?)'
 
-db = sqlite3.connect('test.db')
+db = sqlite3.connect('movie.db')
 cursor = db.cursor()
 try:
     for key, stmt in create_statements.items():

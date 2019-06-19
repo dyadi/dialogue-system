@@ -24,8 +24,8 @@ class Dataset(object):
                 self.dialog_data.append(
                     DialogData(
                         session['session_id'],
-                        message['message_id'],
-                        message['message_from'],
+                        message['id'],
+                        message['from'],
                         message['text'],
                         message['dialog_act']
                     )
