@@ -4,7 +4,7 @@ from .state_tracker import StateTracker
 
 class DialogueManager(object):
     '''Dialogue Manager
-    DialogueManager take the semantic frame formed by list of dicts as input 
+    DialogueManager take the semantic frame formed by list of dicts as input
     and output.
 
     Example:

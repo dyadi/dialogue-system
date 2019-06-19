@@ -12,7 +12,9 @@ DialogData = namedtuple(
     )
 )
 
+
 class Dataset(object):
+
     def __init__(self, file):
         self.data = json.load(file)
         self.intent_set = set()
@@ -35,5 +37,3 @@ class Dataset(object):
                     if 'slot' in action:
                         self.slot_set.add(action['slot'])
                         self.transitive_intent_set.add(action['intent'])
-    
-

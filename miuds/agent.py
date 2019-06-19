@@ -3,6 +3,7 @@ from miuds.ontologies import Ontology
 from miuds.data import Dataset
 import json
 
+
 class Agent(object):
     def __init__(self, dataset, database, nlu=None, nlg=None):
         if isinstance(dataset, str):

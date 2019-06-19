@@ -1,16 +1,18 @@
-from ABC import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod
 
-class NLG(metaclass=ABCMeta);
+
+class NLG(metaclass=ABCMeta):
     """
     NL Generation Interface
-    Usage::
+    Usage:
+
         >>> nlg = NLG(*args, **kwargs)
         >>> nlg([{'intent': 'greeting'}])
         'Hello!'
         >>> nlg([{'intent': 'inform', 'slot': 'price', 'filler': '$10'}])
         'It cost $10.'
 
-    """ 
+    """
     def __init__(self):
         pass
 
@@ -21,4 +23,3 @@ class NLG(metaclass=ABCMeta);
     @abstractmethod
     def __call__(self, dialg_action):
         pass
-

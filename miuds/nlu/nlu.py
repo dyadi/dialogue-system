@@ -1,7 +1,16 @@
-from ABC import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod
 
-class NLU(metaclass=ABCMeta);
+
+class NLU(metaclass=ABCMeta):
     """ NL Understanding Interface
+    Usage:
+
+        >>> nlu = NLG(*args, **kwargs)
+        >>> nlu('Hello!')
+        [{'intent': 'greeting'}]
+        >>> nlu('It cost $10.')
+        [{'intent': 'inform', 'slot': 'price', 'filler': '$10'}]
+
     """
     def __init__(self):
         pass
@@ -13,4 +22,3 @@ class NLU(metaclass=ABCMeta);
     @abstractmethod
     def __call__(self, text):
         pass
-
