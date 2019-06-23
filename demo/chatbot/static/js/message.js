@@ -39,9 +39,9 @@
             $('.message_input').val('');
 			$.get('/chatbot/send_message', {'user_input': text}, function(ret) {
 				ret = JSON.parse(ret);
-				showMessage(ret['user_input'], 'right');
+				showMessage(ret['user_text'] + '\n' + ret['user_action'], 'right');
 				setTimeout(function (){
-					showMessage(ret['agent_response'], 'left');
+					showMessage(ret['agent_text'] + '\n' + ret['agent_action'], 'left');
 				}, 500);
 			})
         };

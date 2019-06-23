@@ -42,6 +42,9 @@ try:
     cursor.execute(insert_movie, ('Introduction to Computer Programming', 'Pang-Feng Liu'))
     cursor.execute(insert_theater, ('CSIE 204', 'Taipei'))
     cursor.execute(insert_time_table, (1, 1, '7/1', '9:00'))
+    cursor.execute(insert_time_table, (1, 1, '7/1', '14:00'))
+    cursor.execute(insert_time_table, (1, 1, '7/2', '9:00'))
+    cursor.execute(insert_time_table, (1, 1, '7/2', '14:00'))
     db.commit()
 except sqlite3.Error as e:
     db.rollback()

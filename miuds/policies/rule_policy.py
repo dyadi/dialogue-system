@@ -7,8 +7,7 @@ necessary_slots = [
     'moviename',
     'theater',
     'date',
-    'starttime',
-    'numberofpeople']
+    'starttime']
 
 
 class RulePolicy(Policy):
@@ -38,15 +37,15 @@ class RulePolicy(Policy):
 
     def _response_request(self, state):
         avail_filler = state['avail_filler']
-        user_requested = state['current_slots']['user']['request']
-        agent_informed = state['current_slots']['agent']['inform']
+        last_user_action = state['last_action']['user']
+        user_requested = last_user_action['request'].keys()
 
         for slot in user_requested:
             if slot in avail_filler:
                 return [{
                     'intent': 'inform',
                     'slot': slot,
-                    'filler': avail_filler[slot]
+                    'filler': random.choice(avail_filler[slot])
                     }]
 
         # No availalbe result
@@ -57,7 +56,8 @@ class RulePolicy(Policy):
         user_informed = state['current_slots']['user']['inform']
         agent_requested = state['current_slots']['agent']['request']
         for slot in necessary_slots:
-            if slot not in agent_requested or slot not in user_informed:
+            if slot not in user_informed:
+            # if slot not in agent_requested or slot not in user_informed:
                 return [{'intent': 'request', 'slot': slot}]
         # Out of rules
         return [{'intent': 'deny'}]
@@ -72,6 +72,8 @@ class RulePolicy(Policy):
         # Fill all necessary slots
         if not self._is_complete(state):
             return self._request_slot(state)
+        elif 'thanks' in last_user_action:
+            return [{'intent': 'thanks'}]
         else:
             # NOTE: 'taskcomplete' should be a intent ???
             return [{'intent': 'inform', 'slot': 'taskcomplete'}]

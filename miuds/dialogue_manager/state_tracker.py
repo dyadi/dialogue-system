@@ -2,7 +2,7 @@ import json
 import numpy as np
 import copy
 
-UNK = '<UNK>'
+UNK = 'UNK'
 
 
 class StateTracker(object):
@@ -71,7 +71,7 @@ class StateTracker(object):
         for message_from in ['agent', 'user']:
             for intent, slots in self.current_slots[message_from].items():
                 for slot, slot_val in slots.items():
-                    if slot_val is not UNK:
+                    if slot_val != UNK:
                         constraint[slot] = slot_val
         return self.ontology.retrieve(constraint)
 

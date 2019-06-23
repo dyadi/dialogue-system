@@ -5,7 +5,7 @@ from sqlite3 import Error
 class Database(object):
     def __init__(self, db_file):
         try:
-            self.db = sqlite3.connect(db_file)
+            self.db = sqlite3.connect(db_file, check_same_thread=False)
         except Error as e:
             logger.error('Could not load database file: %s' % db_file)
 
@@ -50,8 +50,8 @@ class Database(object):
         columns = [col for col in columns if col in self.columns]
         columns_sql = ','.join(columns)
         tables_sql = ' NATURAL JOIN '.join(self.tables)
-        constraint_sql = ['{}={}'.format(key, value)
-                          for key, value in constraint.items()]
+        constraint_sql = ['{}="{}"'.format(key, value)
+                          for key, value in constraint.items() if key in self.columns]
         sql = 'SELECT {} FROM {}'.format(columns_sql, tables_sql)
         if len(constraint) > 0:
             sql += ' WHERE {}'.format(' and '.join(constraint_sql))

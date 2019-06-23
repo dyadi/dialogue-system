@@ -17,6 +17,9 @@ class DataFrame:
         values = np.unique(values)
         return values
 
+    def __contains__(self, key):
+        return self.df.__contains__(key)
+
     def __repr__(self):
         # _PdDataFrame.__repr__ is too hard to read.
         # return self.df.__repr__()

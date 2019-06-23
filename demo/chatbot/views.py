@@ -8,8 +8,4 @@ def index(request):
 
 def send_message(request):
     user_input = request.GET['user_input']
-    response = {
-            'user_input': user_input,
-            'agent_response': agent_response(user_input)
-            }
-    return HttpResponse(json.dumps(response))
+    return HttpResponse(json.dumps(agent_response(user_input)))
