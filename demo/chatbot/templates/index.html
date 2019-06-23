@@ -5,15 +5,26 @@
 {% load staticfiles %}
 <script src="{% static "js/message.js" %}"></script>
 <link href="{% static "css/main.css" %}" rel="stylesheet">
+<link href="{% static "css/timetable.css" %}" rel="stylesheet">
 
 <div class="chat_window">
 	<div class="top_menu">
-		<div class="buttons">
-			<div class="button close"></div>
-			<div class="button minimize"></div>
-			<div class="button maximize"></div>
+		<div class="buttons"><img width="35px" height="30px" src="{% static "img/M_logo.png" %}"></div>
+		<div class="title">
+			Movie Ticket Booking Bot
 		</div>
-		<div class="title">Chat</div></div>
+		<div class="functions">
+			<div class="button" id="show_table">
+				<div class="text">Show Timetable</div>
+			</div>
+			<div class="button" id="mode" mode='text'>
+				<div class="text">Show Dialog Act</div>
+			</div>
+			<div class="button" id="reset">
+				<div class="text">Reset</div>
+			</div>
+		</div>
+	</div>
 	<ul class="messages"></ul>
 	<div class="bottom_wrapper clearfix">
 		<div class="message_input_wrapper">
@@ -31,3 +42,18 @@
 		</div>
 	</li>
 </div>
+<table id="timetable">
+  <tr>
+	{% for k in keys %}
+	<th>{{k}}</th>
+	{% endfor %}
+  </tr>
+  {% for t in values %}
+	<tr>
+		{% for k, v in t.items %}
+		<td>{{v}}</td>
+		{% endfor %}
+	</tr>
+  {% endfor %}
+
+</table>

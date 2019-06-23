@@ -13,9 +13,9 @@ class StateTracker(object):
         self.slot_set = slot_set
         self.ontology = ontology
         self.max_turn = max_turn
-        self.initial_epsidoe()
+        self.initial_episode()
 
-    def initial_epsidoe(self):
+    def initial_episode(self):
         self.turn = 0
         self.current_slots = {}
         self.current_slots['user'] = {'inform': {}, 'request': {}}

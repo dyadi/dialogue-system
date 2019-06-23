@@ -27,6 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+NLU_MODEL_PATH = 'models/nlu/lstm_[1533588045.3]_38_38_240_0.998.p'
+NLG_MODEL_DIR = 'models/nlg/'
+AGENT_DB = 'movie.db'
+DATASET = 'movie.json'
 
 # Application definition
 
@@ -78,7 +82,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    },
 }
 
 
@@ -119,3 +123,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
